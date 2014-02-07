@@ -771,6 +771,7 @@ public class RESTClient {
                 }
                 if (contentType == null)
                     contentType = this.getMIMEType(new File(fname));
+                if (fname.endsWith("srgs")) contentType = "application/srgs+xml";
                 if (fname.endsWith("grxml")) contentType = "application/srgs+xml";
                 if (fname.endsWith("pls")) contentType="application/pls+xml";
                 FileBody fb = new FileBody(new File(fname), contentType, "UTF-8");
