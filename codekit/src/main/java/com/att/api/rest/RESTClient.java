@@ -330,6 +330,9 @@ public class RESTClient {
      */
     public RESTClient(RESTConfig cfg) throws RESTException {
         this.headers = new HashMap<String, List<String>>();
+        if(cfg.getClientSdk() != null) {
+        	this.setHeader("X-Arg", cfg.getClientSdk());
+        }
         this.parameters = new HashMap<String, List<String>>();
         this.url = cfg.getURL();
         this.trustAllCerts = cfg.trustAllCerts();
@@ -486,6 +489,31 @@ public class RESTClient {
 
             APIResponse apiResponse = buildResponse(response);
             return apiResponse;
+        } catch (IOException ioe) {
+            throw new RESTException(ioe);
+        } finally {
+            if (response != null) {
+                this.releaseConnection(response);
+            }
+        }
+    }
+
+    public HttpResponse httpGetAndReturnRawResponse() throws RESTException {
+        HttpClient httpClient = null;
+        HttpResponse response = null;
+
+        try {
+            httpClient = createClient();
+
+            String query = "";
+            if (!buildQuery().equals("")) {
+                query = "?" + buildQuery();
+            }
+            HttpGet httpGet = new HttpGet(url + query);
+            addInternalHeaders(httpGet);
+
+            return httpClient.execute(httpGet);
+
         } catch (IOException ioe) {
             throw new RESTException(ioe);
         } finally {
@@ -700,7 +728,7 @@ public class RESTClient {
 
             HttpPost httpPost = new HttpPost(url);
             this.setHeader("Content-Type",
-                    "multipart/form-data; type=\"application/json\"; "
+                    "multipart/related; type=\"application/json\"; "
                     + "start=\"<startpart>\"; boundary=\"foo\"");
             addInternalHeaders(httpPost);
 
@@ -771,7 +799,6 @@ public class RESTClient {
                 }
                 if (contentType == null)
                     contentType = this.getMIMEType(new File(fname));
-                if (fname.endsWith("srgs")) contentType = "application/srgs+xml";
                 if (fname.endsWith("grxml")) contentType = "application/srgs+xml";
                 if (fname.endsWith("pls")) contentType="application/pls+xml";
                 FileBody fb = new FileBody(new File(fname), contentType, "UTF-8");
@@ -828,7 +855,11 @@ public class RESTClient {
         try {
             httpClient = createClient();
 
-            HttpDelete httpDelete = new HttpDelete(this.url);
+            String query = "";
+            if (!buildQuery().equals("")) {
+                query = "?" + buildQuery();
+            }
+            HttpDelete httpDelete = new HttpDelete(this.url + query);
 
             addInternalHeaders(httpDelete);
 

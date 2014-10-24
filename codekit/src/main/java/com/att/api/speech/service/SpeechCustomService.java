@@ -81,15 +81,21 @@ public class SpeechCustomService extends APIService {
      */
     public SpeechResponse sendRequest(String [] attachments, 
             String speechContext, String xArg) throws Exception {
+        return parseSuccess(sendRequestAndReturnRawJson(attachments, speechContext, xArg, "en-US"));
+    }
+
+    public String sendRequestAndReturnRawJson(String [] attachments, 
+            String speechContext, String xArg, String isoLanguage) throws Exception {
         final String endpoint = getFQDN() + "/speech/v3/speechToTextCustom";
 
         RESTClient restClient = new RESTClient(endpoint)
             .addAuthorizationHeader(getToken())
             .addHeader("Accept", "application/json")
-            .addHeader("X-SpeechContext", speechContext);
+            .addHeader("X-SpeechContext", speechContext)
+            .addHeader("Content-Language", isoLanguage);
 
         if (xArg != null && !xArg.equals("")) {
-            restClient.addHeader("X-Arg", xArg);
+            restClient.setHeader("X-Arg", xArg);
         }
 
         String subType = "x-srgs-audio";
@@ -99,6 +105,6 @@ public class SpeechCustomService extends APIService {
         bodyNameAttribute[2] = "x-voice";
 
         APIResponse apiResponse = restClient.httpPost(attachments, subType, bodyNameAttribute);
-        return parseSuccess(apiResponse.getResponseBody());
+        return apiResponse.getResponseBody();
     }
 }

@@ -88,7 +88,7 @@ public class OAuthToken {
      * @return seconds since Unix epoch
      */
     private static long xtimestamp() {
-        return System.currentTimeMillis() / 1000;
+        return System.currentTimeMillis() / 1000L;
     }
 
     /**
@@ -154,12 +154,52 @@ public class OAuthToken {
     /**
      * Gets refresh token.
      *
-     * @return refresh token
+     * @return String refresh token
      */
     public String getRefreshToken() {
         return refreshToken;
     }
 
+    /**
+     * Convert the token object to a string
+     * 
+     * @return String The string representation of the token object
+     */
+    @Override public String toString() {
+    	return "{ token: " + getAccessToken() + 
+    			    ", expires_in (sec): " + Long.toString(accessTokenExpiry - xtimestamp(), 10) +
+    			    ", refresh_token: " + getRefreshToken() + " }"; 
+    }
+
+    /**
+     * blur token values
+     * @return String Blur out some of the token characters
+     * 
+     */
+    private static String blurToken(String token) {
+       String hidden = null;
+       if(token!=null && token.length()>4) {
+          hidden = token.substring(0, 4) + "**...**" + token.substring(token.length()-5, token.length()-1);
+       } else if (token == null){
+    	   hidden = "null";
+       } else {
+    	   hidden = "*";
+       }
+       return hidden;
+    }
+    
+    /**
+     * Convert the token object to a string, but blur the tokens
+     * 
+     * @return String The string representation of the token object, blured
+     */
+    public String toBluredString() {
+    	String token = getAccessToken();
+    	return "{ token: " + blurToken(getAccessToken()) + 
+    			    ", expires_in (sec): " + Long.toString(accessTokenExpiry - xtimestamp(), 10) +
+    			    ", refresh_token: " + blurToken(getRefreshToken()) + " }"; 
+    }    
+    
     /**
      * Saves this token to a file in an asynchronous-safe manner.
      *

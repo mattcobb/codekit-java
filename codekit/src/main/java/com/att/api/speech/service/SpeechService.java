@@ -18,7 +18,7 @@ import com.att.api.speech.model.SpeechResponse;
  */
 public class SpeechService extends APIService {
     private boolean chunked;
-
+    
     public SpeechService(String fqdn, OAuthToken token) {
         super(fqdn, token);
         this.chunked = false;
@@ -90,20 +90,26 @@ public class SpeechService extends APIService {
      */
     public SpeechResponse sendRequest(File file, String xArg, 
             String speechContext, String subContext) throws Exception {
+        return parseSuccess(sendRequestAndReturnRawJson(file, xArg, speechContext, subContext, "en-US"));
+    }
+    
+    public String sendRequestAndReturnRawJson(File file, String xArg, 
+            String speechContext, String subContext, String isoLanguage) throws Exception {
         final String endpoint = getFQDN() + "/speech/v3/speechToText";
 
         RESTClient restClient = new RESTClient(endpoint)
             .addAuthorizationHeader(getToken())
             .addHeader("Accept", "application/json")
-            .addHeader("X-SpeechContext", speechContext);
+            .addHeader("X-SpeechContext", speechContext)
+            .addHeader("Content-Language", isoLanguage);
 
         if (xArg != null && !xArg.equals("")) {
-            restClient.addHeader("X-Arg", xArg);
+            restClient.setHeader("X-Arg", xArg);
         }
         if (subContext != null && !subContext.equals("") && speechContext.equals("Gaming")){
             restClient.addHeader("X-SpeechSubContext",subContext);
         }
         APIResponse apiResponse = restClient.httpPost(file);
-        return parseSuccess(apiResponse.getResponseBody());
+        return apiResponse.getResponseBody();
     }
 }
