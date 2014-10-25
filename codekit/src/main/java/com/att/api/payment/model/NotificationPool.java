@@ -62,10 +62,23 @@ public class NotificationPool {
     public void updateNotifications(List<Notification> update) {
         synchronized (this.note_lock) {
             this.notifications.addAll(update);
-            if (this.max > IGNORE_MAX){
-                while (this.notifications.size() > 0 && this.notifications.size() > this.max)
+            if (this.max > IGNORE_MAX) {
+                while (this.notifications.size() > 0 
+                        && this.notifications.size() > this.max)
                     this.notifications.remove(0);
             }
         }
+    }
+
+    /**
+     * Add a notification to the current list.
+     * The list will remove old notifications if greater than max.
+     *
+     * @param note A single notification object
+     */
+    public void addNotification(Notification note) {
+        List<Notification> notes = new ArrayList<Notification>();
+        notes.add(note);
+        updateNotifications(notes);
     }
 }
