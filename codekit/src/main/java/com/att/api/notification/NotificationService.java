@@ -30,22 +30,35 @@ import com.att.api.rest.*;
  */
 public class NotificationService extends APIService
 {
-	public NotificationService(String fqdn, OAuthToken token) {
+	public NotificationService(String fqdn, OAuthToken token)
+	{
 		super(fqdn, token);
 	}
 	
 	private final String endpointBase = getFQDN() + "/notification/v1/channels";
 	
 	public NotificationChannel createNotificationChannel(
-    		String serviceName) throws RESTException, JSONException{
+    	String serviceName) throws RESTException, JSONException
+    {
 		return this.createNotificationChannel(serviceName, "application/json", 1.0);
 	}
 	
     public NotificationChannel createNotificationChannel(
-    		String serviceName,
-    		String ncType,
-    		double version) throws RESTException, JSONException {
-    	
+		String serviceName,
+		String ncType,
+		double version) throws RESTException, JSONException
+	{
+        JSONObject jobj = new JSONObject(
+            createNotificationChannelJSON(serviceName, ncType, version));
+
+        return NotificationChannel.valueOf(jobj);
+    }
+    
+    public String createNotificationChannelJSON(
+		String serviceName,
+		String ncType,
+		double version) throws RESTException, JSONException
+	{
     	JSONObject jsonChannel = new JSONObject();
     	jsonChannel.put("serviceName", serviceName);
     	jsonChannel.put("notificationContentType", ncType);
@@ -60,12 +73,27 @@ public class NotificationService extends APIService
             .addAuthorizationHeader(getToken())
             .httpPost(jsonPostBody.toString());
 
-        try {
-            JSONObject jobj = new JSONObject(response.getResponseBody());
+        return response.getResponseBody();
+    }
+ 
+    public NotificationChannel getNotificationChannel(
+    		String channelId) throws RESTException, JSONException
+    {
+        JSONObject jobj = new JSONObject(
+        		getNotificationChannelJSON(channelId));
 
-            return NotificationChannel.valueOf(jobj);
-        } catch (JSONException pe) {
-            throw new RESTException(pe);
-        }
+        return NotificationChannel.valueOf(jobj);
+    }
+    
+    public String getNotificationChannelJSON(
+    		String channelId) throws RESTException, JSONException
+    {
+        final APIResponse response = new RESTClient(endpointBase + "/" + channelId)
+            .setHeader("Accept", "application/json")
+            .setHeader("Content-Type", "application/json")
+            .addAuthorizationHeader(getToken())
+            .httpGet();
+
+        return response.getResponseBody();
     }
 }
