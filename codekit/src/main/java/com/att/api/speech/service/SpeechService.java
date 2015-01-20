@@ -90,9 +90,9 @@ public class SpeechService extends APIService {
      * @throws RESTException
      * @see SpeechResponse
      */
-    public SpeechResponse sendRequest(File audio, String xArg, 
+    public SpeechResponse speechToText(File audio, String xArg, 
             String speechContext, String subContext) throws Exception {
-        return parseSuccess(sendRequestAndReturnRawJson(audio, xArg, speechContext, subContext, "en-US"));
+        return SpeechResponse.valueOf(new JSONObject(sendRequestAndReturnRawJson(audio, xArg, speechContext, subContext, "en-US")));
     }
     
     public String sendRequestAndReturnRawJson(File file, String xArg, 

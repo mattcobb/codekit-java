@@ -69,7 +69,7 @@ public class SMSService extends APIService {
 
         try {
             return SMSSendResponse.valueOf(new JSONObject(sendSMSAndReturnRawJson(rawAddr, msg, notifyDeliveryStatus)));
-        } catch (ParseException pe) {
+        } catch (JSONException pe) {
             throw new RESTException(pe);
         }
     }
@@ -101,20 +101,9 @@ public class SMSService extends APIService {
             .addHeader("Accept", "application/json")
             .httpPost(rpcObject.toString())
             .getResponseBody();
-
-<<<<<<< HEAD
         return responseBody;
     }    
-        
-=======
-        try {
-            return SMSSendResponse.valueOf(new JSONObject(responseBody));
-        } catch (JSONException pe) {
-            throw new RESTException(pe);
-        }
-    }
-
->>>>>>> efc7dea6f506bef8fe89e64659bea2ccfb7609fa
+    
     /**
      * Sends a request for getting delivery status information about an SMS.
      *
@@ -125,7 +114,7 @@ public class SMSService extends APIService {
     public SMSStatus getSMSDeliveryStatus(String msgId) throws RESTException {
         try {
             return SMSStatus.valueOf(new JSONObject(getSMSDeliveryStatusAndReturnRawJson(msgId)));
-        } catch (ParseException pe) {
+        } catch (JSONException pe) {
             throw new RESTException(pe);
         }
     }
@@ -138,16 +127,7 @@ public class SMSService extends APIService {
             .addHeader("Accept", "application/json")
             .httpGet()
             .getResponseBody();
-<<<<<<< HEAD
         return responseBody;
-=======
-
-        try {
-            return SMSStatus.valueOf(new JSONObject(responseBody));
-        } catch (JSONException pe) {
-            throw new RESTException(pe);
-        }
->>>>>>> efc7dea6f506bef8fe89e64659bea2ccfb7609fa
     }
 
     /**
@@ -162,7 +142,7 @@ public class SMSService extends APIService {
 
         try {
             return SMSGetResponse.valueOf(new JSONObject(this.getSMSAndReturnRawJson(registrationID)));
-        } catch (ParseException pe) {
+        } catch (JSONException pe) {
             throw new RESTException(pe);
         }
     }
@@ -177,15 +157,6 @@ public class SMSService extends APIService {
             .addHeader("Accept", "application/json")
             .httpGet()
             .getResponseBody();
-<<<<<<< HEAD
         return responseBody;
-=======
-
-        try {
-            return SMSGetResponse.valueOf(new JSONObject(responseBody));
-        } catch (JSONException pe) {
-            throw new RESTException(pe);
-        }
->>>>>>> efc7dea6f506bef8fe89e64659bea2ccfb7609fa
     }
 }

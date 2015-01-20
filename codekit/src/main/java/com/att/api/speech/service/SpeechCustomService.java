@@ -2,7 +2,6 @@ package com.att.api.speech.service;
 
 import java.io.File;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import com.att.api.oauth.OAuthToken;
@@ -62,31 +61,53 @@ public class SpeechCustomService extends APIService {
     /**
      * Request the API to convert audio to text
      *
-     * @param attachments audio files to convert to to text.
+     * @param audio audio to convert to to text.
      * @param grammar grammar file 
+     * @param dictionary dictionary file
+     * @param speechContext modify the speech context of the request
      * @param xArg add additional xarg values
      *
      * @return response in the form of a SpeechResponse object
      * @throws RESTException
      */
-    public SpeechResponse sendRequest(String [] attachments, 
-            String speechContext, String xArg) throws Exception {
-        return parseSuccess(sendRequestAndReturnRawJson(attachments, speechContext, xArg, "en-US"));
+    public SpeechResponse speechToText(File audio, File grammar,
+            File dictionary, String speechContext, 
+            String xArg) throws RESTException {
+        return SpeechResponse.valueOf(new JSONObject(sendRequestAndReturnRawJson(audio, grammar, dictionary, speechContext, xArg)));
     }
 
-    public String sendRequestAndReturnRawJson(String [] attachments, 
-            String speechContext, String xArg, String isoLanguage) throws Exception {
+    /**
+     * Request the API to convert audio to text
+     *
+     * @param audio audio to convert to to text.
+     * @param grammar grammar file 
+     * @param dictionary dictionary file
+     * @param speechContext modify the speech context of the request
+     * @param xArg add additional xarg values
+     *
+     * @return response in the form of a SpeechResponse object
+     * @throws RESTException
+     */
+    public String sendRequestAndReturnRawJson(File audio, File grammar,
+            File dictionary, String speechContext, 
+            String xArg) throws RESTException {
         final String endpoint = getFQDN() + "/speech/v3/speechToTextCustom";
 
         RESTClient restClient = new RESTClient(endpoint)
-            .addAuthorizationHeader(getToken())
-            .addHeader("Accept", "application/json")
-            .addHeader("X-SpeechContext", speechContext)
-            .addHeader("Content-Language", isoLanguage);
+                .addAuthorizationHeader(getToken())
+                .addHeader("Accept", "application/json");
 
-        if (xArg != null && !xArg.equals("")) {
-            restClient.setHeader("X-Arg", xArg);
-        }
+        if (speechContext != null && !speechContext.equals(""))
+            restClient.addHeader("X-SpeechContext", speechContext);
+
+        if (xArg != null && !xArg.equals(""))
+            restClient.addHeader("X-Arg", xArg);
+
+        String[] attachments = { 
+            dictionary.getAbsolutePath(),
+            grammar.getAbsolutePath(),
+            audio.getAbsolutePath()
+        };
 
         String subType = "x-srgs-audio";
         String[] bodyNameAttribute = { 
@@ -95,7 +116,8 @@ public class SpeechCustomService extends APIService {
             "x-voice" 
         };
 
-        APIResponse apiResponse = restClient.httpPost(attachments, subType, bodyNameAttribute);
+        APIResponse apiResponse = restClient.httpPost(attachments, subType,
+                bodyNameAttribute);
         return apiResponse.getResponseBody();
     }
 }

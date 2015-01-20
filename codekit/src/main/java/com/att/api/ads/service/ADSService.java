@@ -167,7 +167,7 @@ public class ADSService extends APIService {
         try {
             final String responseBody = getAdvertisementAndReturnRawJson(args);
             return ADSResponse.valueOf(new JSONObject(responseBody));
-        } catch (ParseException pe) {
+        } catch (JSONException pe) {
             throw new RESTException(pe);
         }
     }

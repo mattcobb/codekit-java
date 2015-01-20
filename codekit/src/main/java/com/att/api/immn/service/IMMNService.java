@@ -18,6 +18,9 @@
 
 package com.att.api.immn.service;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.json.JSONArray;
@@ -100,7 +103,7 @@ public class IMMNService extends APIService {
         try {
             JSONObject jobj = new JSONObject(sendMessageAndReturnRawJson(addresses, msg, subject, group, attachments));
             return SendResponse.valueOf(jobj);
-        } catch (ParseException pe) {
+        } catch (JSONException pe) {
             throw new RESTException(pe);
         }
     }
@@ -157,7 +160,7 @@ public class IMMNService extends APIService {
             JSONObject jobj = new JSONObject(
                     getMessageListAndReturnRawJson(args));
             return MessageList.valueOf(jobj);
-        } catch (ParseException pe) {
+        } catch (JSONException pe) {
             throw new RESTException(pe);
         }
     }
