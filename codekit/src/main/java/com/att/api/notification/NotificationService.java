@@ -96,4 +96,102 @@ public class NotificationService extends APIService
 
         return response.getResponseBody();
     }
+    
+    public void deleteNotificationChannel(
+        String channelId) throws RESTException
+    {
+        final APIResponse response = new RESTClient(endpointBase + "/" + channelId)
+        .setHeader("Content-Type", "application/json")
+        .addAuthorizationHeader(getToken())
+        .httpDelete();
+        
+        if (response.getStatusCode() != 204) {
+            final int code = response.getStatusCode();
+            final String body = response.getResponseBody();
+            throw new RESTException(code, body);
+        }
+    }
+    
+    public NotificationSubscription createNotificationSubscription(
+    	NotificationChannel channel, OAuthToken serviceToken,
+    	String[] events, String callbackData, int expiresIn)
+        throws RESTException, JSONException
+    {
+        JSONObject jobj = new JSONObject(
+            createNotificationChannelJSON(channel, serviceToken,
+                events, callbackData, expiresIn));
+
+        return NotificationSubscription.valueOf(jobj);
+    }
+
+	public String createNotificationChannelJSON(
+			NotificationChannel channel, OAuthToken serviceToken,
+			String[] events, String callbackData, int expiresIn) 
+			throws RESTException
+	{
+    	JSONObject jsonSubscription = new JSONObject();
+    	jsonSubscription.put("events", events);
+    	
+    	if(callbackData != null && callbackData.length()>0) {
+    		jsonSubscription.put("callbackData", callbackData);
+    	}
+    	
+    	jsonSubscription.put("expiresIn", expiresIn);
+    	
+    	JSONObject jsonPostBody = new JSONObject();
+    	jsonPostBody.put("subscription", jsonSubscription);
+    	
+        final APIResponse response = new RESTClient(endpointBase + "/" + 
+            channel.getChannelId() + "/subscriptions")
+            .setHeader("Accept", "application/json")
+            .setHeader("Content-Type", "application/json")
+            .addAuthorizationHeader(serviceToken.getAccessToken())
+            .httpPost(jsonPostBody.toString());
+
+        return response.getResponseBody();	
+	}
+	
+    public NotificationSubscription getNotificationSubscription(
+    		NotificationChannel channel,
+    		String subscriptionId,
+    		OAuthToken serviceToken) throws RESTException, JSONException
+    {
+        JSONObject jobj = new JSONObject(
+        		getNotificationSubscriptionJSON(channel, subscriptionId, serviceToken));
+
+        return NotificationSubscription.valueOf(jobj);
+    }
+    
+    public String getNotificationSubscriptionJSON(
+    		NotificationChannel channel,
+    		String subscriptionId,
+    		OAuthToken serviceToken) throws RESTException, JSONException
+    {
+        final APIResponse response = new RESTClient(endpointBase + "/" + channel.getChannelId() +
+        		"/subscriptions/" + subscriptionId)
+            .setHeader("Accept", "application/json")
+            .setHeader("Content-Type", "application/json")
+            .addAuthorizationHeader(serviceToken.getAccessToken())
+            .httpGet();
+
+        return response.getResponseBody();
+    }
+    
+    public void deleteNotificationSubscription(
+    		NotificationChannel channel,
+            String subscriptionId,
+            OAuthToken serviceToken) throws RESTException
+        {
+            final APIResponse response = new RESTClient(endpointBase + "/" +
+                channel.getChannelId() + "/subscriptions/" + subscriptionId)
+                .setHeader("Content-Type", "application/json")
+                .addAuthorizationHeader(serviceToken.getAccessToken())
+                .httpDelete();
+            
+            if (response.getStatusCode() != 204) {
+                final int code = response.getStatusCode();
+                final String body = response.getResponseBody();
+                throw new RESTException(code, body);
+            }
+        }
 }

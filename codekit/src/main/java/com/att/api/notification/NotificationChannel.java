@@ -11,6 +11,9 @@ public class NotificationChannel {
 	private String contentType;
 	private double version;
 	
+	public NotificationChannel() {
+	}
+	
 	public NotificationChannel(String channelId, int maxEvents) {
 		this(channelId, maxEvents, null, null, null, 1.0);
 	}
