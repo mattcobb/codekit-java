@@ -77,7 +77,7 @@ public class NotificationService extends APIService
     }
  
     public NotificationChannel getNotificationChannel(
-    		String channelId) throws RESTException, JSONException
+    	String channelId) throws RESTException, JSONException
     {
         JSONObject jobj = new JSONObject(
         		getNotificationChannelJSON(channelId));
@@ -86,7 +86,7 @@ public class NotificationService extends APIService
     }
     
     public String getNotificationChannelJSON(
-    		String channelId) throws RESTException, JSONException
+		String channelId) throws RESTException, JSONException
     {
         final APIResponse response = new RESTClient(endpointBase + "/" + channelId)
             .setHeader("Accept", "application/json")
@@ -118,43 +118,25 @@ public class NotificationService extends APIService
         throws RESTException, JSONException
     {
         JSONObject jobj = new JSONObject(
-            createNotificationChannelJSON(channel, serviceToken,
+            createNotificationSubscriptionJSON(channel, serviceToken,
                 events, callbackData, expiresIn));
 
         return NotificationSubscription.valueOf(jobj);
     }
 
-	public String createNotificationChannelJSON(
-			NotificationChannel channel, OAuthToken serviceToken,
-			String[] events, String callbackData, int expiresIn) 
-			throws RESTException
+	public String createNotificationSubscriptionJSON(
+		NotificationChannel channel, OAuthToken serviceToken,
+		String[] events, String callbackData, int expiresIn) 
+		throws RESTException
 	{
-    	JSONObject jsonSubscription = new JSONObject();
-    	jsonSubscription.put("events", events);
-    	
-    	if(callbackData != null && callbackData.length()>0) {
-    		jsonSubscription.put("callbackData", callbackData);
-    	}
-    	
-    	jsonSubscription.put("expiresIn", expiresIn);
-    	
-    	JSONObject jsonPostBody = new JSONObject();
-    	jsonPostBody.put("subscription", jsonSubscription);
-    	
-        final APIResponse response = new RESTClient(endpointBase + "/" + 
-            channel.getChannelId() + "/subscriptions")
-            .setHeader("Accept", "application/json")
-            .setHeader("Content-Type", "application/json")
-            .addAuthorizationHeader(serviceToken.getAccessToken())
-            .httpPost(jsonPostBody.toString());
-
-        return response.getResponseBody();	
+		return sendSubscription(channel, serviceToken, events, callbackData, expiresIn,
+	        true).getResponseBody();	
 	}
 	
     public NotificationSubscription getNotificationSubscription(
-    		NotificationChannel channel,
-    		String subscriptionId,
-    		OAuthToken serviceToken) throws RESTException, JSONException
+		NotificationChannel channel,
+		String subscriptionId,
+		OAuthToken serviceToken) throws RESTException, JSONException
     {
         JSONObject jobj = new JSONObject(
         		getNotificationSubscriptionJSON(channel, subscriptionId, serviceToken));
@@ -163,9 +145,9 @@ public class NotificationService extends APIService
     }
     
     public String getNotificationSubscriptionJSON(
-    		NotificationChannel channel,
-    		String subscriptionId,
-    		OAuthToken serviceToken) throws RESTException, JSONException
+		NotificationChannel channel,
+		String subscriptionId,
+		OAuthToken serviceToken) throws RESTException, JSONException
     {
         final APIResponse response = new RESTClient(endpointBase + "/" + channel.getChannelId() +
         		"/subscriptions/" + subscriptionId)
@@ -178,20 +160,73 @@ public class NotificationService extends APIService
     }
     
     public void deleteNotificationSubscription(
-    		NotificationChannel channel,
-            String subscriptionId,
-            OAuthToken serviceToken) throws RESTException
-        {
-            final APIResponse response = new RESTClient(endpointBase + "/" +
-                channel.getChannelId() + "/subscriptions/" + subscriptionId)
-                .setHeader("Content-Type", "application/json")
-                .addAuthorizationHeader(serviceToken.getAccessToken())
-                .httpDelete();
-            
-            if (response.getStatusCode() != 204) {
-                final int code = response.getStatusCode();
-                final String body = response.getResponseBody();
-                throw new RESTException(code, body);
-            }
+		NotificationChannel channel,
+	    String subscriptionId,
+	    OAuthToken serviceToken) throws RESTException
+    {
+        final APIResponse response = new RESTClient(endpointBase + "/" +
+            channel.getChannelId() + "/subscriptions/" + subscriptionId)
+            .setHeader("Content-Type", "application/json")
+            .addAuthorizationHeader(serviceToken.getAccessToken())
+            .httpDelete();
+        
+        if (response.getStatusCode() != 204) {
+            final int code = response.getStatusCode();
+            final String body = response.getResponseBody();
+            throw new RESTException(code, body);
         }
+    }
+    public NotificationSubscription updateNotificationSubscription(
+        	NotificationChannel channel, OAuthToken serviceToken,
+        	String[] events, String callbackData, int expiresIn)
+            throws RESTException, JSONException
+    {
+        JSONObject jobj = new JSONObject(
+            createNotificationSubscriptionJSON(channel, serviceToken,
+                events, callbackData, expiresIn));
+
+        return NotificationSubscription.valueOf(jobj);
+    }
+
+	public String updateNotificationSubscriptionJSON(
+		NotificationChannel channel, OAuthToken serviceToken,
+		String[] events, String callbackData, int expiresIn) 
+		throws RESTException, JSONException
+	{
+		return sendSubscription(channel, serviceToken, events, callbackData, expiresIn,
+		     false).getResponseBody();
+	}
+	
+	private APIResponse sendSubscription(
+		NotificationChannel channel, OAuthToken serviceToken,
+		String[] events, String callbackData, int expiresIn, boolean create) 
+	    throws RESTException, JSONException
+	{
+    	JSONObject jsonSubscription = new JSONObject();
+    	jsonSubscription.put("events", events);
+    	
+    	if(callbackData != null && callbackData.length()>0) {
+    		jsonSubscription.put("callbackData", callbackData);
+    	}
+    	
+    	jsonSubscription.put("expiresIn", expiresIn);
+    	
+    	JSONObject jsonBody = new JSONObject();
+    	jsonBody.put("subscription", jsonSubscription);
+    	
+        RESTClient subscriptionClient = new RESTClient(endpointBase + "/" + 
+            channel.getChannelId() + "/subscriptions")
+            .setHeader("Accept", "application/json")
+            .setHeader("Content-Type", "application/json")
+            .addAuthorizationHeader(serviceToken.getAccessToken());
+        
+        final APIResponse response;
+        if(create) {
+        	response = subscriptionClient.httpPost(jsonBody.toString());
+        } else {
+        	response = subscriptionClient.httpPut(jsonBody.toString());
+        }
+        
+        return response;
+	}
 }
