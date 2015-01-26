@@ -18,11 +18,11 @@ public class NotificationChannel {
 		this(channelId, maxEvents, null, null, null, 1.0);
 	}
 	
-	public NotificationChannel(String channelId, int maxEvent,
+	public NotificationChannel(String channelId, int maxEvents,
 	    String serviceName, String channelType, String contentType, double version)
 	{
 		this.setChannelId(channelId);
-		this.setMaxEvents(maxEventsPerNotification);
+		this.setMaxEvents(maxEvents);
 		if(serviceName != null) this.setServiceName(serviceName);
 		if(channelType != null) this.setChannelType(channelType);
 		if(contentType != null) this.setContentType(contentType);
@@ -66,8 +66,8 @@ public class NotificationChannel {
 	public Integer getMaxEvents() {
 		return maxEventsPerNotification;
 	}
-	public void setMaxEvents(Integer maxEventsPerNotification) {
-		this.maxEventsPerNotification = maxEventsPerNotification;
+	public void setMaxEvents(Integer maxEvents) {
+		this.maxEventsPerNotification = maxEvents;
 	}
 
 	public String getServiceName() {
